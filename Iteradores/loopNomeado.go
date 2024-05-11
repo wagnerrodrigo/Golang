@@ -15,11 +15,11 @@ loop:
 			fmt.Printf("Quebrando switch, i == %d.\n", i)
 			break
 		case 5:
-			fmt.Printf("Quebrando loop, i == 5.")
+			fmt.Println("Quebrando loop, i == 5.")
 			break loop
 		}
 
 	}
 
-	fmt.Println(i)
+	fmt.Println("Fim.")
 }
