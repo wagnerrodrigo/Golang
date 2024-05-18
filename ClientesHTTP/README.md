@@ -1,3 +1,4 @@
+
 # clientesHTTP
 
 
@@ -9,20 +10,43 @@ cliente criados
 - login
 - get-current-user
 
+#### binarios disponiveis
+    cli >> linux
+    cli.exe >> win
+    cli_mac >> mac
 
-como usar 
 
-Para buscar usuário digite o comando abaixo.
+#### como usar 
+
+
+Para buscar usuário digite o comando abaixo. ou usar os binários para o seu sistema operacional que se encontra na pasta bin
+
+- executando com o binario
+```sh 
+    cli.exe -action get-user -id 1 
+```
+
+- executando com o go
 ```go 
     go run ./cmd/client -action get-user -id 1                              
 ```
+
 > saida esperada:  {1 atuny0 9uQFF1Lh atuny0@sohu.com }
 
+- executando com o binario
+```sh 
+    cli.exe -action login -user atuny0 -pass 9uQFF1Lh 
+```
+
+
+- executando com o go
 
 Em seguida, com os dados de usuário e login digite o comando abaixo.
 ```go 
     go run ./cmd/client -action login -user atuny0 -pass 9uQFF1Lh 
 ```
+
+
 > saida esperada: 
 > 
 > usuario logado com sucesso
@@ -32,6 +56,11 @@ Em seguida, com os dados de usuário e login digite o comando abaixo.
 
 E por último o cliente customizado.
 
+- executando com o binario
+```sh 
+    cli.exe -action get-current-user -user atuny0 -pass 9uQFF1Lh
+```
+- executando com o go
 ```go 
     go run ./cmd/client -action get-current-user -user atuny0 -pass 9uQFF1Lh
 ```
