@@ -1,0 +1,49 @@
+# Ignorar arquivos e pastas do Go
+# Diretórios e arquivos gerados por Go
+bin/
+build/
+*.test
+*.exe
+*.out
+*.log
+*.tmp
+*.pid
+
+# Dependências do Go
+vendor/
+go.sum
+
+# Ignorar arquivos do editor
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.vscode/
+.idea/
+.DS_Store
+
+# Ignorar arquivos do frontend
+# Diretórios e arquivos gerados pelo frontend
+node_modules/
+build/
+*.log
+
+# Ignorar arquivos de configuração de ambiente
+.env
+*.env
+
+# Ignorar arquivos de cache
+*.cache
+
+# Ignorar arquivos temporários
+*.tmp
+*.bak
+*.swp
+
+# Ignorar arquivos de sistema
+Thumbs.db
+Desktop.ini
+
+# Ignorar arquivos específicos do Vercel e Netlify
+.vercel/
+.netlify/
