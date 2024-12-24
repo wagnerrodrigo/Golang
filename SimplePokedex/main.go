@@ -284,7 +284,7 @@ func main() {
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		fmt.Print("\n")
-		fmt.Println("Digite o nome do pokemon")
+		fmt.Println("Digite o nome do pokemon:")
 		scanner.Scan()
 
 		url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", scanner.Text())
