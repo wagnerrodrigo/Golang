@@ -1,0 +1,38 @@
+name: Executar Automação de Ponto
+on:
+  schedule:
+    # Agendado usando o fuso horário UTC.                                                          
+    # 10:00 da manhã no Brasil (Horário de Brasília, UTC-3) equivale a 13:00 UTC.                  
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Permite que o workflow seja executado manualmente a partir da interface do GitHub Actions.
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Baixar o codigo do repositorio
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Configurar o ambiente Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' # Versão do Go que você deseja usar
+
+      # 3. Roda o script passando as credenciais seguras do github secrets
+      - name: Run Script
+        env:
+          URL: ${{ secrets.URL }}
+          MATRICULA: ${{ secrets.MATRICULA }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          go run main.go
+
+      # 4. Salvar o screenshot gerado como um artefato do GitHub Actions
+      - name: Upload Screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-execucao
+          path: screenshot.png
+          if-no-files-found: warn # Avisa no log se o arquivo do screenshot não foi encontrado

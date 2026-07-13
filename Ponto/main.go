@@ -4,12 +4,36 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/chromedp/chromedp"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Carregar variáveis de ambiente do arquivo .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Aviso: Não foi possível carregar o arquivo .env, usando variáveis do sistema se existirem")
+	}
+
+	// Obter a URL da variável de ambiente
+	targetURL := os.Getenv("URL")
+	if targetURL == "" {
+		log.Fatal("Erro: A variável 'URL' não está configurada no arquivo .env ou no sistema")
+	}
+
+	targetMatricula := os.Getenv("MATRICULA")
+	if targetMatricula == "" {
+		log.Fatal("Erro: A variável 'MATRICULA' não está configurada no arquivo .env ou no sistema")
+	}
+
+	targetPassword := os.Getenv("PASSWORD")
+	if targetPassword == "" {
+		log.Fatal("Erro: A variável 'PASSWORD' não está configurada no arquivo .env ou no sistema")
+	}
+
 	// 1. Configurar o Chromedp
 	// Por padrão, o chromedp roda em modo "headless" (background).
 	// Para ver a automação acontecendo no seu monitor, vamos desabilitar o headless (headless = false).
@@ -37,13 +61,10 @@ func main() {
 	var pageTitle string
 	var screenshotBuf []byte
 
-	// URL da Intranet
-	targetURL := "http://intranet.exemplo.com.br"
-
 	log.Printf("Iniciando navegação para: %s", targetURL)
 
 	// 2. Executar as ações
-	err := chromedp.Run(ctx,
+	err = chromedp.Run(ctx,
 		// Navegar até a URL
 		chromedp.Navigate(targetURL),
 
@@ -55,20 +76,38 @@ func main() {
 		chromedp.Title(&pageTitle),
 
 		// =========================================================================
-		// EXEMPLOS DE INTERAÇÕES (SUBSTITUA PELOS SELETORES DA SUA PÁGINA)
+		// INTERAÇÕES COM A PÁGINA
 		// =========================================================================
 
-		// Exemplo 1: Clicar em um botão por ID
-		chromedp.Click(`#botao-iniciar`, chromedp.ByID),
+		// Esperar o botão "Iniciar Pesquisa" (com a classe .pesquisar) estar visível
+		chromedp.WaitVisible(`button.pesquisar`, chromedp.ByQuery),
 
-		// Exemplo 2: Digitar em um input
+		// Clicar no botão "Iniciar Pesquisa"
+		chromedp.Click(`button.pesquisar`, chromedp.ByQuery),
+
+		// Exemplo de preenchimento de input caso precise digitar algo depois
 		// chromedp.SendKeys(`#input-cpf`, "123.456.789-00", chromedp.ByID),
 
-		// Exemplo 3: Clicar em um botão pelo seletor CSS (ex: classe ou tag)
-		// chromedp.Click(`button.btn-submit`, chromedp.ByQuery),
+		// Espera o botao de "matricula" e "senha" estar visível antes de preencher e clicar em login
+		chromedp.WaitVisible(`#matricula`, chromedp.ByID),
+		chromedp.SendKeys(`#matricula`, targetMatricula, chromedp.ByID),
 
-		// Exemplo 4: Esperar 2 segundos para dar tempo de ver a ação ou a transição
-		chromedp.Sleep(2*time.Second),
+		chromedp.WaitVisible(`#password`, chromedp.ByID),
+		chromedp.SendKeys(`#password`, targetPassword, chromedp.ByID),
+
+		chromedp.WaitVisible(`a.iniciar`, chromedp.ByQuery),
+		chromedp.Click(`a.iniciar`, chromedp.ByQuery),
+
+		// Esperar a próxima tela carregar (confirmar contato)
+		chromedp.WaitVisible(`button[onclick="telefone()"]`, chromedp.ByQuery),
+		chromedp.Click(`button[onclick="telefone()"]`, chromedp.ByQuery),
+
+		// Esperar o botão "ESTOU BEM" carregar e clicar nele
+		// chromedp.WaitVisible(`button[onclick="pergunta4('BEM')"]`, chromedp.ByQuery),
+		// chromedp.Click(`button[onclick="pergunta4('BEM')"]`, chromedp.ByQuery),
+
+		// Esperar 3 segundos para ver a próxima tela/transição
+		chromedp.Sleep(3*time.Second),
 
 		// Exemplo 5: Tirar um screenshot da tela final
 		chromedp.FullScreenshot(&screenshotBuf, 90),
