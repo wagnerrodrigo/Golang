@@ -63,71 +63,95 @@ func main() {
 
 	log.Printf("Iniciando navegação para: %s", targetURL)
 
-	// 2. Executar as ações
+	// 2. Executar o login
 	err = chromedp.Run(ctx,
 		// Navegar até a URL
 		chromedp.Navigate(targetURL),
 
-		// Esperar o corpo da página carregar (ou um elemento específico)
-		// Exemplo: chromedp.WaitVisible(`#id_do_elemento`, chromedp.ByID)
+		// Esperar o corpo da página carregar
 		chromedp.WaitVisible(`body`, chromedp.ByQuery),
 
 		// Capturar o título da página
 		chromedp.Title(&pageTitle),
 
-		// =========================================================================
-		// INTERAÇÕES COM A PÁGINA
-		// =========================================================================
-
-		// Esperar o botão "Iniciar Pesquisa" (com a classe .pesquisar) estar visível
+		// Esperar o botão "Iniciar Pesquisa" estar visível e clicar
 		chromedp.WaitVisible(`button.pesquisar`, chromedp.ByQuery),
-
-		// Clicar no botão "Iniciar Pesquisa"
 		chromedp.Click(`button.pesquisar`, chromedp.ByQuery),
 
-		// Exemplo de preenchimento de input caso precise digitar algo depois
-		// chromedp.SendKeys(`#input-cpf`, "123.456.789-00", chromedp.ByID),
-
-		// Espera o botao de "matricula" e "senha" estar visível antes de preencher e clicar em login
+		// Preencher matrícula e senha
 		chromedp.WaitVisible(`#matricula`, chromedp.ByID),
 		chromedp.SendKeys(`#matricula`, targetMatricula, chromedp.ByID),
 
 		chromedp.WaitVisible(`#password`, chromedp.ByID),
 		chromedp.SendKeys(`#password`, targetPassword, chromedp.ByID),
 
+		// Clicar em Login
 		chromedp.WaitVisible(`a.iniciar`, chromedp.ByQuery),
 		chromedp.Click(`a.iniciar`, chromedp.ByQuery),
 
-		// Esperar a próxima tela carregar (confirmar contato)
-		chromedp.WaitVisible(`button[onclick="telefone()"]`, chromedp.ByQuery),
-		chromedp.Click(`button[onclick="telefone()"]`, chromedp.ByQuery),
-
-		// AGUARDAR A ANIMAÇÃO (slideDown de 1 segundo) TERMINAR COMPLETAMENTE
-		chromedp.Sleep(1500*time.Millisecond),
-
-		// Esperar o botão "ESTOU BEM" carregar e clicar nele
-		chromedp.WaitVisible(`#pergunta4 button.btn-success`, chromedp.ByQuery),
-		chromedp.Click(`#pergunta4 button.btn-success`, chromedp.ByQuery),
-
-		// AGUARDAR O MODAL DO ALERTIFY APARECER E COMPLETAR A ANIMAÇÃO
-		chromedp.Sleep(1*time.Second),
-
-		// Esperar o botão "Concluir" do modal do Alertify aparecer e clicar nele
-		chromedp.WaitVisible(`button.ajs-ok`, chromedp.ByQuery),
-		chromedp.Click(`button.ajs-ok`, chromedp.ByQuery),
-
-		// Esperar 4 segundos (o AJAX do site leva 3 segundos para redirecionar após salvar)
-		chromedp.Sleep(4*time.Second),
-
-		// Exemplo 5: Tirar um screenshot da tela final
-		chromedp.FullScreenshot(&screenshotBuf, 90),
+		// Aguardar 3 segundos para carregar a resposta do login (o telefone ou o SweetAlert)
+		chromedp.Sleep(3*time.Second),
 	)
-
 	if err != nil {
-		log.Fatalf("Erro durante a execução do programa: %v", err)
+		log.Fatalf("Erro durante o login: %v", err)
 	}
 
-	log.Printf("Página acessada com sucesso! Título: %s", pageTitle)
+	// 3. Verificar se a pesquisa já foi realizada hoje
+	var isAlreadyDone bool
+	err = chromedp.Run(ctx,
+		chromedp.Evaluate(`document.querySelector('.swal-modal') !== null`, &isAlreadyDone),
+	)
+	if err != nil {
+		log.Printf("Aviso: Falha ao verificar se pesquisa já estava concluída: %v", err)
+	}
+
+	if isAlreadyDone {
+		log.Println("A pesquisa de saúde já foi realizada hoje! Encerrando com sucesso...")
+
+		// Clicar no botão "OK" do SweetAlert e tirar screenshot da tela de aviso
+		err = chromedp.Run(ctx,
+			chromedp.FullScreenshot(&screenshotBuf, 90),
+			chromedp.Sleep(1*time.Second), // validar a ordem de execução para garantir que o screenshot seja tirado antes do clique
+			chromedp.Click(`button.swal-button--confirm`, chromedp.ByQuery),
+		)
+		if err != nil {
+			log.Printf("Aviso: Não foi possível clicar no OK do SweetAlert: %v", err)
+		}
+	} else {
+		log.Println("Pesquisa ainda não realizada. Iniciando preenchimento da pesquisa...")
+
+		// 4. Executar os passos da pesquisa
+		err = chromedp.Run(ctx,
+			// Esperar a próxima tela carregar (confirmar contato)
+			chromedp.WaitVisible(`button[onclick="telefone()"]`, chromedp.ByQuery),
+			chromedp.Click(`button[onclick="telefone()"]`, chromedp.ByQuery),
+
+			// AGUARDAR A ANIMAÇÃO (slideDown de 1 segundo) TERMINAR COMPLETAMENTE
+			chromedp.Sleep(1500*time.Millisecond),
+
+			// Esperar o botão "ESTOU BEM" carregar e clicar nele
+			chromedp.WaitVisible(`#pergunta4 button.btn-success`, chromedp.ByQuery),
+			chromedp.Click(`#pergunta4 button.btn-success`, chromedp.ByQuery),
+
+			// AGUARDAR O MODAL DO ALERTIFY APARECER E COMPLETAR A ANIMAÇÃO
+			chromedp.Sleep(1*time.Second),
+
+			// Esperar o botão "Concluir" do modal do Alertify aparecer e clicar nele
+			chromedp.WaitVisible(`button.ajs-ok`, chromedp.ByQuery),
+			chromedp.Click(`button.ajs-ok`, chromedp.ByQuery),
+
+			// Esperar 4 segundos (o AJAX do site leva 3 segundos para redirecionar após salvar)
+			chromedp.Sleep(4*time.Second),
+
+			// Tirar um screenshot da tela final
+			chromedp.FullScreenshot(&screenshotBuf, 90),
+		)
+		if err != nil {
+			log.Fatalf("Erro durante o preenchimento da pesquisa: %v", err)
+		}
+	}
+
+	log.Printf("Fluxo concluído com sucesso! Título da página: %s", pageTitle)
 
 	// Salvar o screenshot no disco
 	if len(screenshotBuf) > 0 {
