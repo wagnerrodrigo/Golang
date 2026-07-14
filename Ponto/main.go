@@ -102,12 +102,22 @@ func main() {
 		chromedp.WaitVisible(`button[onclick="telefone()"]`, chromedp.ByQuery),
 		chromedp.Click(`button[onclick="telefone()"]`, chromedp.ByQuery),
 
-		// Esperar o botão "ESTOU BEM" carregar e clicar nele
-		// chromedp.WaitVisible(`button[onclick="pergunta4('BEM')"]`, chromedp.ByQuery),
-		// chromedp.Click(`button[onclick="pergunta4('BEM')"]`, chromedp.ByQuery),
+		// AGUARDAR A ANIMAÇÃO (slideDown de 1 segundo) TERMINAR COMPLETAMENTE
+		chromedp.Sleep(1500*time.Millisecond),
 
-		// Esperar 3 segundos para ver a próxima tela/transição
-		chromedp.Sleep(3*time.Second),
+		// Esperar o botão "ESTOU BEM" carregar e clicar nele
+		chromedp.WaitVisible(`#pergunta4 button.btn-success`, chromedp.ByQuery),
+		chromedp.Click(`#pergunta4 button.btn-success`, chromedp.ByQuery),
+
+		// AGUARDAR O MODAL DO ALERTIFY APARECER E COMPLETAR A ANIMAÇÃO
+		chromedp.Sleep(1*time.Second),
+
+		// Esperar o botão "Concluir" do modal do Alertify aparecer e clicar nele
+		chromedp.WaitVisible(`button.ajs-ok`, chromedp.ByQuery),
+		chromedp.Click(`button.ajs-ok`, chromedp.ByQuery),
+
+		// Esperar 4 segundos (o AJAX do site leva 3 segundos para redirecionar após salvar)
+		chromedp.Sleep(4*time.Second),
 
 		// Exemplo 5: Tirar um screenshot da tela final
 		chromedp.FullScreenshot(&screenshotBuf, 90),
