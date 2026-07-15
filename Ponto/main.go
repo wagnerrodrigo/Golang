@@ -38,7 +38,7 @@ func main() {
 	// Por padrão, o chromedp roda em modo "headless" (background).
 	// Para ver a automação acontecendo no seu monitor, vamos desabilitar o headless (headless = false).
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", false), // Mude para true para rodar em background
+		chromedp.Flag("headless", true), // Mude para true para rodar em background
 		chromedp.Flag("disable-gpu", true),
 	)
 
