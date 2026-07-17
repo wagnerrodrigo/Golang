@@ -9,6 +9,7 @@ on:
 jobs:
   run-automation:
     runs-on: ubuntu-latest
+    environment: Ponto
     steps:
       # 1. Baixar o codigo do repositorio
       - name: Checkout code
