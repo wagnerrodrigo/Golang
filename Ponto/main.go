@@ -40,6 +40,8 @@ func main() {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true), // Mude para true para rodar em background
 		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("no-sandbox", true), // Necessário para rodar em alguns ambientes, como o GitHub Actions
+		chromedp.Flag("disable-setuid-sandbox", true),
 	)
 
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
@@ -156,6 +158,10 @@ func main() {
 	// Salvar o screenshot no disco
 	if len(screenshotBuf) > 0 {
 		screenshotPath := "screenshot.png"
+		if isAlreadyDone {
+			screenshotPath = "screenshot_already_done.png"
+			log.Println("Salvando screenshot da tela de aviso de pesquisa já realizada...")
+		}
 		err = ioutil.WriteFile(screenshotPath, screenshotBuf, 0o644)
 		if err != nil {
 			log.Printf("Aviso: Não foi possível salvar o screenshot: %v", err)
