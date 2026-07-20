@@ -2,8 +2,9 @@ name: Executar Automação de Ponto
 on:
   schedule:
     # Agendado usando o fuso horário UTC.                                                          
-    # 10:00 da manhã no Brasil (Horário de Brasília, UTC-3) equivale a 13:00 UTC.                  
-    - cron: '0 13 * * *'
+    # 10:00 da manhã no Brasil (Horário de Brasília, UTC-3) equivale a 13:00 UTC.
+    # Rodar de segunda a sexta às 10:00 BRT
+    - cron: '0 13 * * 1-5'
   workflow_dispatch: # Permite que o workflow seja executado manualmente a partir da interface do GitHub Actions.
 
 jobs:
